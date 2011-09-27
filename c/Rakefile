@@ -1,0 +1,4 @@
+task :go do
+    sh "gcc -o cspiro -lglut spiro.c"
+    sh "./cspiro"
+end
