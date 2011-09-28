@@ -6,31 +6,30 @@
 
 #define SPIRO_LENGTH 20000
 
-float spiro_x(float moving, float fixed, float offset, float t)
+float spiro_x(float r, float moving, float offset, float t)
 {
-    float r = fixed - moving;
     return (r * cos(t)) + (offset * cos(t * r / moving));
 }
 
-float spiro_y(float moving, float fixed, float offset, float t)
+float spiro_y(float r, float moving, float offset, float t)
 {
-    float r = fixed - moving;
     return (r * sin(t)) - (offset * sin(t * r / moving));
 
 }
 
 void draw_spiro(float moving, float fixed, float offset, float * vertices)
 {
-    float t, x, y;
+    float t, x, y, r;
 
     int i;
 
     t = 0.0f;
+    r = fixed - moving;
     
     for (i = 0; i < SPIRO_LENGTH; i += 2)
     {
-        x = spiro_x(moving, fixed, offset, t);
-        y = spiro_y(moving, fixed, offset, t);
+        x = spiro_x(r, moving, offset, t);
+        y = spiro_y(r, moving, offset, t);
 
         vertices[i] = x;
         vertices[i + 1] = y; 
