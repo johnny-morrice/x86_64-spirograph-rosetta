@@ -46,7 +46,7 @@ void draw_spiro(float moving, float fixed, float offset, float * vertices)
 void display()
 {
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
 
     glDrawArrays(GL_POINTS, 0, SPIRO_LENGTH); 
 
