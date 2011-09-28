@@ -58,7 +58,6 @@ void initialize(int argc, char * argv[])
 
     glutInit(&argc, argv);
     glutInitDisplayMode(0);
-    glutInitWindowSize(300, 400);
     glutCreateWindow("C Spirograph");
 
     glutDisplayFunc(&display);
