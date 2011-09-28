@@ -54,15 +54,11 @@ void display()
 
 void initialize(int argc, char * argv[])
 {
-    float vertices[2 * SPIRO_LENGTH];
-
     glutInit(&argc, argv);
     glutInitDisplayMode(0);
     glutCreateWindow("C Spirograph");
 
     glutDisplayFunc(&display);
-
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 }
 

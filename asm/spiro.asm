@@ -1,20 +1,23 @@
 ; NASM Spirograph
 ; John Morrice 2011.  Released into the public domain
 
-; Some of this code is written in the unstructured paradigm
+; A couple of warnings:
+; 1. Some of this code is written in the unstructured paradigm.
+; 2. This AMD64 OpenGL application is my first assembly program.
 
 BITS 64 
 
 %define GL_COLOR_BUFFER_BIT 0x00004000
 %define GL_POINTS 0x0000
 %define GL_VERTEX_ARRAY 0x8074
-%define GL_FLOAT 0x1406
+%define GL_DOUBLE 0x140A
 %define SPIRO_LENGTH 10000
 
 section .data
     name:   db 'NASM Spirograph', 0
     usage:  db 'Usage: %s MOVING FIXED OFFSET', 10, 0
-    tick:   db 'Tick', 10, 0
+    increment: dq __float64__(0.03)
+    dbg_str: db '%f', 10, 0
 
 section .text
 
@@ -24,12 +27,15 @@ section .text
     extern atof
     extern exit
 
+    extern sin, cos
+
     extern glClear
     extern glEnableClientState, glDisableClientState
     extern glVertexPointer, glDrawArrays
 
     extern glutInit, glutInitDisplayMode, glutCreateWindow
     extern glutDisplayFunc, glutSwapBuffers, glutMainLoop
+
 
 ; Process arguments
 ; Expects:
@@ -90,6 +96,7 @@ display:
     call glDrawArrays
 
     call glutSwapBuffers
+    ret
 
 ; Initialize OpenGL
 initialize:
@@ -108,6 +115,122 @@ initialize:
 
     mov rdi, display
     call glutDisplayFunc
+    ret
+
+; spiro_x is a little helper for draw_spiro
+; Returns into xmm6
+spiro_x:
+    movq xmm7, xmm2
+    movq xmm0, xmm4
+    call cos
+    mulsd xmm7, xmm0
+    movq xmm0, xmm6
+    call cos
+    mulsd xmm0, xmm3
+    addsd xmm7, xmm0
+    ret
+
+; spiro_y is a little helper for draw_spiro
+; Returns into xmm6
+spiro_y:
+    movq xmm7, xmm2
+    movq xmm0, xmm4
+    call sin
+    mulsd xmm7, xmm0
+    movq xmm0, xmm6
+    call sin 
+    mulsd xmm0, xmm3
+    subsd xmm7, xmm0
+    ret
+
+; Draw the spiro into the vertex array
+; xmm1: moving
+; xmm2: fixed
+; xmm3: offset
+; rdi: vertices 
+draw_spiro:
+    
+    mov rax, 0
+    ; xmm4 is time t
+    movq xmm4, rax
+    ; xmm5 is the time increment
+    mov rax, 0
+    mov rax, increment
+    movq xmm5, rax
+    
+    ; xmm2 becomes the path magnitude r, fixed - moving
+    subsd xmm2, xmm1
+
+    mov rcx, SPIRO_LENGTH
+
+; Drawing loop
+parametric:
+
+    push rcx
+
+    ; xmm6 becomes t * r / moving
+    movq xmm6, xmm4
+    mulsd xmm6, xmm2
+    divsd xmm6, xmm1
+
+    ; Write x into the vertex array
+    push rdi
+    call spiro_x
+    pop rdi
+    movq [rdi], xmm7
+
+    add rdi, 8
+
+    ; Write y into the vertex array
+    push rdi
+    call spiro_y
+    pop rdi
+    movq [rdi], xmm7
+ 
+    push rdi
+    push rbp
+    mov rbp, rsp
+    movq xmm0, xmm5
+    mov rdi, dbg_str
+    mov rax, 1
+    call printf
+    pop rbp
+    pop rdi
+    
+    pop rcx
+
+    ; Increment time
+    addsd xmm4, xmm5 
+
+    ; Decrement counter
+    dec rcx
+    jnz parametric
+
+    ret
+    
+; Begin game loop
+render:
+    ; The vertex array
+    sub rsp, 16 * SPIRO_LENGTH
+
+    ; Draw the spirograph
+    mov rdi, rsp
+    call draw_spiro
+
+    mov rdi, GL_VERTEX_ARRAY
+    call glEnableClientState
+
+    mov rdi, 2
+    mov rsi, GL_DOUBLE
+    mov rdx, 0
+    mov rcx, rsp
+    call glVertexPointer
+
+    call glutMainLoop
+
+    mov rdi, GL_VERTEX_ARRAY
+    call glDisableClientState
+
     ret
 
 ; Entry!
@@ -134,18 +257,13 @@ main:
     call initialize
     pop rdx
 
-    ; Extract the values of the radii etc into
-    ; rdi: moving
-    ; rsi: fixed
-    ; rdx: offset
-    ; r10: vertices 
-    mov rdi, [rdx]
-    mov rsi, [rdx + 8]
-    mov rdx, [rdx + 16]
-    sub rsp, 8 * SPIRO_LENGTH
+    ; Extract the values of the radii etc 
+    movq xmm1, [rdx]
+    movq xmm2, [rdx + 8]
+    movq xmm3, [rdx + 16]
 
     ; Draw the spirograph
-    call draw_spiro
+    call render
  
     ; Return
     mov rax, 0
