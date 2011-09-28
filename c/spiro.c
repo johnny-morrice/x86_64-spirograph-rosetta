@@ -19,19 +19,11 @@ float spiro_y(float moving, float fixed, float offset, float t)
 
 }
 
-float* draw_spiro()
+void draw_spiro(float moving, float fixed, float offset, float * vertices)
 {
-    float moving, fixed, offset, t, x, y;
+    float t, x, y;
 
     int i;
-
-    float* vertices;
-
-    vertices = malloc(2 * SPIRO_LENGTH * sizeof(float));
-
-    moving = 0.2f;
-    fixed = 0.5f;
-    offset = 0.6f;
 
     t = 0.0f;
     
@@ -49,8 +41,6 @@ float* draw_spiro()
 
     printf("%f radians\n", t / 3.1415);
 
-    return vertices;
-
 }
 
 void display()
@@ -63,7 +53,7 @@ void display()
     glutSwapBuffers();
 }
 
-void initialize(int argc, char* argv[])
+void initialize(int argc, char * argv[])
 {
     float vertices[2 * SPIRO_LENGTH];
 
@@ -78,21 +68,54 @@ void initialize(int argc, char* argv[])
 
 }
 
-int main(int argc, char* argv[])
+void read_arguments(int argc, char * argv[], float * real_args)
 {
-    float * vertices;
+    int i;
 
-    initialize(argc, argv);
+    if (argc == 4)
+    {
+        for (i = 1; i < 4; i++)
+        {
+            real_args[i - 1] = atof(argv[i]);
+        }
+    }
+    else
+    {
+        fprintf(stderr, "Usage: %s MOVING FIXED OFFSET\n", argv[0]);
+        exit(1);
+    }
+}
+
+void render(float moving, float fixed, float offset)
+{
+    float vertices[2 * SPIRO_LENGTH];
 
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    vertices = draw_spiro();
+    draw_spiro(moving, fixed, offset, vertices);
 
     glVertexPointer(2, GL_FLOAT, 0, vertices);
 
     glutMainLoop();
 
     glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+int main(int argc, char * argv[])
+{
+    float moving, fixed, offset;
+    float real_args[3];
+
+    read_arguments(argc, argv, real_args);
+
+    moving = real_args[0];
+    fixed = real_args[1];
+    offset = real_args[2];
+
+    initialize(argc, argv);
+
+    render(moving, fixed, offset);
 
     return 0;
+
 }
