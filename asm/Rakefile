@@ -1,5 +1,5 @@
 task :go do
-    sh "nasm -f elf64 spiro.asm -o asmspiro.o"
-    sh "ld -l glut -O 1 -o asmspiro asmspiro.o"
-    sh "./asmspiro"
+    sh "nasm -f elf64 -g spiro.asm -l spiro.lst -o asmspiro.o"
+    sh "gcc -lglut -g -o asmspiro asmspiro.o"
+    sh "./asmspiro 0.1 0.5 0.1"
 end

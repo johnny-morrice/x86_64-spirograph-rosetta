@@ -1,0 +1,4 @@
+gl_color_buffer_bit 0x00004000
+gl_points 0x0000
+gl_vertex_array 0x8074
+gl_float 0x1406
