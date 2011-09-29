@@ -6,20 +6,20 @@
 
 #define SPIRO_LENGTH 20000
 
-float spiro_x(float r, float moving, float offset, float t)
+double spiro_x(double r, double moving, double offset, double t)
 {
     return (r * cos(t)) + (offset * cos(t * r / moving));
 }
 
-float spiro_y(float r, float moving, float offset, float t)
+double spiro_y(double r, double moving, double offset, double t)
 {
     return (r * sin(t)) - (offset * sin(t * r / moving));
 
 }
 
-void draw_spiro(float moving, float fixed, float offset, float * vertices)
+void draw_spiro(double moving, double fixed, double offset, double * vertices)
 {
-    float t, x, y, r;
+    double t, x, y, r;
 
     int i;
 
@@ -30,6 +30,8 @@ void draw_spiro(float moving, float fixed, float offset, float * vertices)
     {
         x = spiro_x(r, moving, offset, t);
         y = spiro_y(r, moving, offset, t);
+//        printf("%f\n", x);
+
 
         vertices[i] = x;
         vertices[i + 1] = y; 
@@ -37,8 +39,6 @@ void draw_spiro(float moving, float fixed, float offset, float * vertices)
         t += 0.03;
 
     }
-
-    printf("%f radians\n", t / 3.1415);
 
 }
 
@@ -62,7 +62,7 @@ void initialize(int argc, char * argv[])
 
 }
 
-void read_arguments(int argc, char * argv[], float * real_args)
+void read_arguments(int argc, char * argv[], double * real_args)
 {
     int i;
 
@@ -80,15 +80,15 @@ void read_arguments(int argc, char * argv[], float * real_args)
     }
 }
 
-void render(float moving, float fixed, float offset)
+void render(double moving, double fixed, double offset)
 {
-    float vertices[2 * SPIRO_LENGTH];
+    double vertices[2 * SPIRO_LENGTH];
 
     glEnableClientState(GL_VERTEX_ARRAY);
 
     draw_spiro(moving, fixed, offset, vertices);
-
-    glVertexPointer(2, GL_FLOAT, 0, vertices);
+    
+    glVertexPointer(2, GL_DOUBLE, 0, vertices);
 
     glutMainLoop();
 
@@ -97,8 +97,8 @@ void render(float moving, float fixed, float offset)
 
 int main(int argc, char * argv[])
 {
-    float moving, fixed, offset;
-    float real_args[3];
+    double moving, fixed, offset;
+    double real_args[4];
 
     read_arguments(argc, argv, real_args);
 

@@ -1,14 +1,14 @@
-     1                                  ; NASM Spirograph
+     1                                  ; Spirograph in x86_64 assembly (NASM) with OpenGL
      2                                  ; John Morrice 2011.  Released into the public domain
      3                                  
      4                                  ; A couple of warnings:
      5                                  ; 1. Some of this code is written in the unstructured paradigm.
-     6                                  ; 2. This AMD64 OpenGL application is my first assembly program.
+     6                                  ; 2. This is my first assembly program.
      7                                  
      8                                  BITS 64 
      9                                  
     10                                  %define GL_COLOR_BUFFER_BIT 0x00004000
-    11                                  %define GL_POINTS 0x0000
+    11                                  %define GL_POINTS 0
     12                                  %define GL_VERTEX_ARRAY 0x8074
     13                                  %define GL_DOUBLE 0x140A
     14                                  %define SPIRO_LENGTH 10000
@@ -95,208 +95,256 @@
     95                                  
     96                                  ; Display the vertex array
     97                                  display:
-    98                                      
-    99 0000007D 48BF00400000000000-         mov rdi, GL_COLOR_BUFFER_BIT
-   100 00000086 00                 
-   101 00000087 E8(00000000)                call glClear
-   102                                  
-   103 0000008C 48BA10270000000000-         mov rdx, SPIRO_LENGTH
-   104 00000095 00                 
-   105 00000096 48BE00000000000000-         mov rsi, 0
-   106 0000009F 00                 
-   107 000000A0 48BF00000000000000-         mov rdi, GL_POINTS
-   108 000000A9 00                 
-   109 000000AA E8(00000000)                call glDrawArrays
-   110                                  
-   111 000000AF E8(00000000)                call glutSwapBuffers
-   112 000000B4 C3                          ret
-   113                                  
-   114                                  ; Initialize OpenGL
-   115                                  initialize:
-   116                                      ; Save rdi
-   117                                      ; Write that location to rdi for calling glutInit
-   118 000000B5 57                          push rdi
-   119 000000B6 4889E7                      mov rdi, rsp
-   120 000000B9 E8(00000000)                call glutInit
-   121 000000BE 5F                          pop rdi
-   122                                  
-   123 000000BF 48BF00000000000000-         mov rdi, 0
-   124 000000C8 00                 
-   125 000000C9 E8(00000000)                call glutInitDisplayMode
-   126                                  
-   127 000000CE 48BF-                       mov rdi, name 
-   128 000000D0 [0000000000000000] 
-   129 000000D8 E8(00000000)                call glutCreateWindow
-   130                                  
-   131 000000DD 48BF-                       mov rdi, display
-   132 000000DF [7D00000000000000] 
-   133 000000E7 E8(00000000)                call glutDisplayFunc
-   134 000000EC C3                          ret
-   135                                  
-   136                                  ; spiro_x is a little helper for draw_spiro
-   137                                  ; Returns into xmm6
-   138                                  spiro_x:
-   139 000000ED F30F7EFA                    movq xmm7, xmm2
-   140 000000F1 F30F7EC4                    movq xmm0, xmm4
-   141 000000F5 E8(00000000)                call cos
-   142 000000FA F20F59F8                    mulsd xmm7, xmm0
-   143 000000FE F30F7EC6                    movq xmm0, xmm6
-   144 00000102 E8(00000000)                call cos
-   145 00000107 F20F59C3                    mulsd xmm0, xmm3
-   146 0000010B F20F58F8                    addsd xmm7, xmm0
-   147 0000010F C3                          ret
-   148                                  
-   149                                  ; spiro_y is a little helper for draw_spiro
-   150                                  ; Returns into xmm6
-   151                                  spiro_y:
-   152 00000110 F30F7EFA                    movq xmm7, xmm2
-   153 00000114 F30F7EC4                    movq xmm0, xmm4
-   154 00000118 E8(00000000)                call sin
-   155 0000011D F20F59F8                    mulsd xmm7, xmm0
-   156 00000121 F30F7EC6                    movq xmm0, xmm6
-   157 00000125 E8(00000000)                call sin 
-   158 0000012A F20F59C3                    mulsd xmm0, xmm3
-   159 0000012E F20F5CF8                    subsd xmm7, xmm0
-   160 00000132 C3                          ret
-   161                                  
-   162                                  ; Draw the spiro into the vertex array
-   163                                  ; xmm1: moving
-   164                                  ; xmm2: fixed
-   165                                  ; xmm3: offset
-   166                                  ; rdi: vertices 
-   167                                  draw_spiro:
-   168                                      
-   169 00000133 48B800000000000000-         mov rax, 0
-   170 0000013C 00                 
-   171                                      ; xmm4 is time t
-   172 0000013D 66480F6EE0                  movq xmm4, rax
-   173                                      ; xmm5 is the time increment
-   174 00000142 48B800000000000000-         mov rax, 0
-   175 0000014B 00                 
-   176 0000014C 48B8-                       mov rax, increment
-   177 0000014E [2F00000000000000] 
-   178 00000156 66480F6EE8                  movq xmm5, rax
-   179                                      
-   180                                      ; xmm2 becomes the path magnitude r, fixed - moving
-   181 0000015B F20F5CD1                    subsd xmm2, xmm1
-   182                                  
-   183 0000015F 48B910270000000000-         mov rcx, SPIRO_LENGTH
-   184 00000168 00                 
-   185                                  
-   186 00000169 4889F8                      mov rax, rdi    
-   187                                  
-   188                                  ; Drawing loop
-   189                                  parametric:
-   190                                  
-   191 0000016C 51                          push rcx
+    98                                  
+    99 0000007D 55                          push rbp    
+   100 0000007E 48BF00400000000000-         mov rdi, GL_COLOR_BUFFER_BIT
+   101 00000087 00                 
+   102 00000088 E8(00000000)                call glClear
+   103                                  
+   104 0000008D 48BA10270000000000-         mov rdx, SPIRO_LENGTH
+   105 00000096 00                 
+   106 00000097 48BE00000000000000-         mov rsi, 0
+   107 000000A0 00                 
+   108 000000A1 48BF00000000000000-         mov rdi, GL_POINTS
+   109 000000AA 00                 
+   110 000000AB E8(00000000)                call glDrawArrays
+   111                                  
+   112 000000B0 E8(00000000)                call glutSwapBuffers
+   113 000000B5 5D                          pop rbp
+   114 000000B6 C3                          ret
+   115                                  
+   116                                  ; Initialize OpenGL
+   117                                  initialize:
+   118                                      ; Save argc to the stack
+   119                                      ; Write that a pointer to argc to rdi for calling glutInit
+   120 000000B7 57                          push rdi
+   121 000000B8 4889E7                      mov rdi, rsp
+   122 000000BB E8(00000000)                call glutInit
+   123 000000C0 5F                          pop rdi
+   124                                  
+   125 000000C1 48BF00000000000000-         mov rdi, 0
+   126 000000CA 00                 
+   127 000000CB E8(00000000)                call glutInitDisplayMode
+   128                                  
+   129 000000D0 48BF-                       mov rdi, name 
+   130 000000D2 [0000000000000000] 
+   131 000000DA E8(00000000)                call glutCreateWindow
+   132                                  
+   133 000000DF 48BF-                       mov rdi, display
+   134 000000E1 [7D00000000000000] 
+   135 000000E9 E8(00000000)                call glutDisplayFunc
+   136 000000EE C3                          ret
+   137                                  
+   138                                  ; spiro_x is a little helper for draw_spiro
+   139                                  ; y coordinate of spiro
+   140                                  spiro_x:
+   141                                  
+   142 000000EF 488B45D0                    mov rax, [rbp - 48]
+   143 000000F3 66480F6EC0                  movq xmm0, rax 
+   144 000000F8 55                          push rbp
+   145 000000F9 E8(00000000)                call cos
+   146                                  
+   147 000000FE 5D                          pop rbp
+   148 000000FF 488B45D8                    mov rax, [rbp - 40]
+   149 00000103 66480F6EC8                  movq xmm1, rax
+   150 00000108 F20F59C1                    mulsd xmm0, xmm1
+   151                                  
+   152 0000010C 660FD645C8                  movq [rbp - 56], xmm0
+   153                                      
+   154 00000111 488B45F8                    mov rax, [rbp - 8]
+   155 00000115 66480F6EC0                  movq xmm0, rax
+   156 0000011A 55                          push rbp
+   157 0000011B E8(00000000)                call cos
+   158 00000120 5D                          pop rbp
+   159 00000121 488B45E8                    mov rax, [rbp - 24]
+   160 00000125 66480F6EC8                  movq xmm1, rax
+   161 0000012A F20F59C1                    mulsd xmm0, xmm1
+   162                                  
+   163 0000012E 488B45C8                    mov rax, [rbp - 56]
+   164 00000132 66480F6EC8                  movq xmm1, rax
+   165                                  
+   166 00000137 F20F58C1                    addsd xmm0, xmm1 
+   167                                  
+   168 0000013B C3                          ret
+   169                                  
+   170                                  ; spiro_y is a little helper for draw_spiro
+   171                                  ; y coordinate of spiro
+   172                                  spiro_y:
+   173 0000013C 488B45D0                    mov rax, [rbp - 48]
+   174 00000140 66480F6EC0                  movq xmm0, rax 
+   175 00000145 55                          push rbp
+   176 00000146 E8(00000000)                call sin
+   177 0000014B 5D                          pop rbp
+   178 0000014C 488B45D8                    mov rax, [rbp - 40]
+   179 00000150 66480F6EC8                  movq xmm1, rax
+   180 00000155 F20F59C1                    mulsd xmm0, xmm1
+   181                                  
+   182 00000159 660FD645C8                  movq [rbp - 56], xmm0
+   183                                      
+   184 0000015E 488B45F8                    mov rax, [rbp - 8]
+   185 00000162 66480F6EC0                  movq xmm0, rax
+   186 00000167 55                          push rbp
+   187 00000168 E8(00000000)                call sin 
+   188 0000016D 5D                          pop rbp
+   189 0000016E 488B45E8                    mov rax, [rbp - 24]
+   190 00000172 66480F6EC8                  movq xmm1, rax
+   191 00000177 F20F59C1                    mulsd xmm0, xmm1 
    192                                  
-   193                                      ; xmm6 becomes t * r / moving
-   194 0000016D F30F7EF4                    movq xmm6, xmm4
-   195 00000171 F20F59F2                    mulsd xmm6, xmm2
-   196 00000175 F20F5EF1                    divsd xmm6, xmm1
-   197                                  
-   198                                      ; Write x into the vertex array
-   199 00000179 57                          push rdi
-   200 0000017A E86EFFFFFF                  call spiro_x
-   201 0000017F 5F                          pop rdi
-   202 00000180 660FD63F                    movq [rdi], xmm7
-   203                                  
-   204 00000184 4883C708                    add rdi, 8
-   205                                  
-   206                                      ; Write y into the vertex array
-   207 00000188 57                          push rdi
-   208 00000189 E882FFFFFF                  call spiro_y
-   209 0000018E 5F                          pop rdi
-   210 0000018F 660FD63F                    movq [rdi], xmm7
-   211                                   
-   212 00000193 57                          push rdi
-   213 00000194 55                          push rbp
-   214 00000195 4889E5                      mov rbp, rsp
-   215 00000198 F30F7EC5                    movq xmm0, xmm5
-   216 0000019C 48BF-                       mov rdi, dbg_str
-   217 0000019E [3700000000000000] 
-   218 000001A6 48B801000000000000-         mov rax, 1
-   219 000001AF 00                 
-   220 000001B0 E8(00000000)                call printf
-   221 000001B5 5D                          pop rbp
-   222 000001B6 5F                          pop rdi
-   223                                      
-   224 000001B7 59                          pop rcx
+   193 0000017B 488B45C8                    mov rax, [rbp - 56]
+   194 0000017F 66480F6EC8                  movq xmm1, rax
+   195 00000184 F20F5CC1                    subsd xmm0, xmm1 
+   196                                  
+   197 00000188 C3                          ret
+   198                                  
+   199                                  ; Draw the spiro into the vertex array
+   200                                  ; xmm0: moving
+   201                                  ; xmm1: fixed
+   202                                  ; xmm2: offset
+   203                                  ; rdi: vertices 
+   204                                  draw_spiro:
+   205                                      
+   206 00000189 55                          push rbp
+   207 0000018A 4889E5                      mov rbp, rsp
+   208 0000018D 4883EC38                    sub rsp, 56
+   209                                  
+   210                                      ; rbp - 8 is time t
+   211 00000191 48C745F800000000            mov qword [rbp - 8], 0
+   212                                      ; rbp - 16 is time increment
+   213 00000199 488B0425[2F000000]          mov rax, [increment]
+   214 000001A1 488945F0                    mov qword [rbp - 16], rax
+   215                                  
+   216                                      ; rbp - 24 becomes the path magnitude, fixed - moving
+   217 000001A5 F20F5CC8                    subsd xmm1, xmm0
+   218 000001A9 660FD64DE8                  movq [rbp - 24], xmm1
+   219                                  
+   220                                      ; rbp - 32 becomes the moving circle's radius
+   221 000001AE 660FD645E0                  movq [rbp - 32], xmm0
+   222                                  
+   223                                      ; rbp - 40 becomes the offset
+   224 000001B3 660FD655D8                  movq [rbp - 40], xmm2
    225                                  
-   226                                      ; Increment time
-   227 000001B8 F20F58E5                    addsd xmm4, xmm5 
+   226 000001B8 48B910270000000000-         mov rcx, SPIRO_LENGTH
+   227 000001C1 00                 
    228                                  
-   229                                      ; Decrement counter
-   230 000001BC 48FFC9                      dec rcx
-   231 000001BF 75AB                        jnz parametric
-   232                                  
-   233 000001C1 C3                          ret
-   234                                      
-   235                                  ; Begin game loop
-   236                                  render:
-   237                                      ; The vertex array
-   238 000001C2 4881EC00710200              sub rsp, 16 * SPIRO_LENGTH
-   239                                  
-   240                                      ; Draw the spirograph
-   241 000001C9 4889E7                      mov rdi, rsp
-   242 000001CC E862FFFFFF                  call draw_spiro
-   243                                  
-   244 000001D1 48BF74800000000000-         mov rdi, GL_VERTEX_ARRAY
-   245 000001DA 00                 
-   246 000001DB E8(00000000)                call glEnableClientState
-   247                                  
-   248 000001E0 48BF02000000000000-         mov rdi, 2
-   249 000001E9 00                 
-   250 000001EA 48BE0A140000000000-         mov rsi, GL_DOUBLE
-   251 000001F3 00                 
-   252 000001F4 48BA00000000000000-         mov rdx, 0
-   253 000001FD 00                 
-   254 000001FE 4889E1                      mov rcx, rsp
-   255 00000201 E8(00000000)                call glVertexPointer
-   256                                  
-   257 00000206 E8(00000000)                call glutMainLoop
+   229                                  ; Drawing loop
+   230                                  parametric:
+   231                                  
+   232 000001C2 51                          push rcx
+   233                                  
+   234                                      ; rbp - 48 becomes t * magnitude / moving
+   235 000001C3 488B45F8                    mov rax, [rbp - 8]
+   236 000001C7 66480F6EC0                  movq xmm0, rax
+   237 000001CC 488B45E8                    mov rax, [rbp - 24]
+   238 000001D0 66480F6EC8                  movq xmm1, rax
+   239 000001D5 F20F59C1                    mulsd xmm0, xmm1
+   240 000001D9 488B45E0                    mov rax, [rbp - 32]
+   241 000001DD 66480F6EC8                  movq xmm1, rax
+   242 000001E2 F20F5EC1                    divsd xmm0, xmm1
+   243 000001E6 660FD645D0                  movq [rbp - 48], xmm0
+   244                                  
+   245                                      ; Write x into the vertex array
+   246 000001EB 57                          push rdi
+   247 000001EC E8FEFEFFFF                  call spiro_x
+   248 000001F1 5F                          pop rdi
+   249 000001F2 660FD607                    movq [rdi], xmm0
+   250                                  
+   251 000001F6 4883C708                    add rdi, 8
+   252                                  
+   253                                      ; Write y into the vertex array
+   254 000001FA 57                          push rdi
+   255 000001FB E83CFFFFFF                  call spiro_y
+   256 00000200 5F                          pop rdi
+   257 00000201 660FD607                    movq [rdi], xmm0
    258                                  
-   259 0000020B 48BF74800000000000-         mov rdi, GL_VERTEX_ARRAY
-   260 00000214 00                 
-   261 00000215 E8(00000000)                call glDisableClientState
+   259 00000205 4883C708                    add rdi, 8   
+   260                                   
+   261 00000209 59                          pop rcx
    262                                  
-   263 0000021A C3                          ret
-   264                                  
-   265                                  ; Entry!
-   266                                  main:
-   267 0000021B 55                          push rbp
-   268 0000021C 4889E5                      mov rbp, rsp
-   269                                      
-   270                                      ; Store the radii and offset in an array
-   271                                      ; The array is pointed to by rdx
-   272 0000021F 4883EC18                    sub rsp, 24
-   273 00000223 4889E2                      mov rdx, rsp
+   263                                      ; Increment time
+   264 0000020A 488B45F8                    mov rax, [rbp - 8]
+   265 0000020E 66480F6EC0                  movq xmm0, rax
+   266 00000213 488B45F0                    mov rax, [rbp - 16]
+   267 00000217 66480F6EC8                  movq xmm1, rax
+   268 0000021C F20F58C1                    addsd xmm0, xmm1 
+   269 00000220 660FD645F8                  movq [rbp - 8], xmm0
+   270                                  
+   271                                      ; Decrement counter
+   272 00000225 48FFC9                      dec rcx
+   273 00000228 7598                        jnz parametric
    274                                  
-   275                                      ; Get the radii etc from the command line arguments 
-   276 00000226 52                          push rdx
-   277 00000227 56                          push rsi
-   278 00000228 57                          push rdi
-   279 00000229 E8D2FDFFFF                  call read_arguments
-   280 0000022E 5F                          pop rdi
-   281 0000022F 5E                          pop rsi
-   282 00000230 5A                          pop rdx
-   283                                  
-   284                                      ; Initialize OpenGL
-   285 00000231 52                          push rdx
-   286 00000232 E87EFEFFFF                  call initialize
-   287 00000237 5A                          pop rdx
-   288                                  
-   289                                      ; Extract the values of the radii etc 
-   290 00000238 F30F7E0A                    movq xmm1, [rdx]
-   291 0000023C F30F7E5208                  movq xmm2, [rdx + 8]
-   292 00000241 F30F7E5A10                  movq xmm3, [rdx + 16]
+   275 0000022A 4889EC                      mov rsp, rbp
+   276 0000022D 5D                          pop rbp
+   277 0000022E C3                          ret
+   278                                      
+   279                                  ; Begin game loop
+   280                                  render:
+   281 0000022F 55                          push rbp
+   282 00000230 4889E5                      mov rbp, rsp
+   283                                      ; The vertex array
+   284 00000233 4881EC00710200              sub rsp, 16 * SPIRO_LENGTH
+   285                                  
+   286                                      ; Draw the spirograph
+   287 0000023A 4889E7                      mov rdi, rsp
+   288 0000023D E847FFFFFF                  call draw_spiro
+   289                                  
+   290 00000242 48BF74800000000000-         mov rdi, GL_VERTEX_ARRAY
+   291 0000024B 00                 
+   292 0000024C E8(00000000)                call glEnableClientState
    293                                  
-   294                                      ; Draw the spirograph
-   295 00000246 E877FFFFFF                  call render
-   296                                   
-   297                                      ; Return
-   298 0000024B 48B800000000000000-         mov rax, 0
-   299 00000254 00                 
-   300 00000255 4889EC                      mov rsp, rbp
-   301 00000258 5D                          pop rbp
-   302 00000259 C3                          ret
+   294 00000251 4889E1                      mov rcx, rsp
+   295 00000254 48BA00000000000000-         mov rdx, 0
+   296 0000025D 00                 
+   297 0000025E 48BE0A140000000000-         mov rsi, GL_DOUBLE
+   298 00000267 00                 
+   299 00000268 48BF02000000000000-         mov rdi, 2
+   300 00000271 00                 
+   301 00000272 E8(00000000)                call glVertexPointer
+   302                                  
+   303 00000277 E8(00000000)                call glutMainLoop
+   304                                  
+   305 0000027C 48BF74800000000000-         mov rdi, GL_VERTEX_ARRAY
+   306 00000285 00                 
+   307 00000286 E8(00000000)                call glDisableClientState
+   308                                  
+   309 0000028B 4889EC                      mov rsp, rbp
+   310 0000028E 5D                          pop rbp
+   311 0000028F C3                          ret
+   312                                  
+   313                                  ; Entry!
+   314                                  main:
+   315 00000290 55                          push rbp
+   316 00000291 4889E5                      mov rbp, rsp
+   317                                      
+   318                                      ; Store the radii and offset in an array
+   319                                      ; The array is pointed to by rdx
+   320 00000294 4883EC18                    sub rsp, 24
+   321 00000298 4889E2                      mov rdx, rsp
+   322                                  
+   323                                      ; Get the radii etc from the command line arguments 
+   324 0000029B 52                          push rdx
+   325 0000029C 56                          push rsi
+   326 0000029D 57                          push rdi
+   327 0000029E E85DFDFFFF                  call read_arguments
+   328 000002A3 5F                          pop rdi
+   329 000002A4 5E                          pop rsi
+   330 000002A5 5A                          pop rdx
+   331                                  
+   332                                      ; Initialize OpenGL
+   333 000002A6 52                          push rdx
+   334 000002A7 E80BFEFFFF                  call initialize
+   335 000002AC 5A                          pop rdx
+   336                                  
+   337                                      ; Extract the values of the radii etc 
+   338 000002AD F30F7E02                    movq xmm0, [rdx]
+   339 000002B1 F30F7E4A08                  movq xmm1, [rdx + 8]
+   340 000002B6 F30F7E5210                  movq xmm2, [rdx + 16]
+   341                                  
+   342                                      ; Draw the spirograph
+   343 000002BB E86FFFFFFF                  call render
+   344                                   
+   345                                      ; Return
+   346 000002C0 48B800000000000000-         mov rax, 0
+   347 000002C9 00                 
+   348 000002CA 4889EC                      mov rsp, rbp
+   349 000002CD 5D                          pop rbp
+   350 000002CE C3                          ret
