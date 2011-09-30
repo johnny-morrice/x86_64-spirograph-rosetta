@@ -3,6 +3,10 @@ task :test do
     sh "./cspiro 0.1 0.7 0.2"
 end
 
+task :build do
+    sh "gcc -o cspiro -O3 -lglut spiro.c draw_spiro.c"
+end
+
 task :bench do
-    sh "gcc -o bench -lglut bench.c draw_spiro.c"
+    sh "gcc -o bench -O3 -lglut bench.c draw_spiro.c"
 end

@@ -11,5 +11,5 @@ end
 
 task :bench do
     sh "nasm -f elf64 -Ox bench.asm -o bench.o"
-    sh "gcc -lglut -O2 -o bench bench.o"
+    sh "gcc -lglut -o bench bench.o"
 end

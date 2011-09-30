@@ -88,10 +88,7 @@ spiro_x:
 
     mov rax, [rbp - 48]
     movq xmm0, rax 
-    push rbp
     call cos
-
-    pop rbp
     mov rax, [rbp - 40]
     movq xmm1, rax
     mulsd xmm0, xmm1
@@ -100,9 +97,7 @@ spiro_x:
     
     mov rax, [rbp - 8]
     movq xmm0, rax
-    push rbp
     call cos
-    pop rbp
     mov rax, [rbp - 24]
     movq xmm1, rax
     mulsd xmm0, xmm1
@@ -119,9 +114,7 @@ spiro_x:
 spiro_y:
     mov rax, [rbp - 48]
     movq xmm0, rax 
-    push rbp
     call sin
-    pop rbp
     mov rax, [rbp - 40]
     movq xmm1, rax
     mulsd xmm0, xmm1
@@ -130,9 +123,7 @@ spiro_y:
     
     mov rax, [rbp - 8]
     movq xmm0, rax
-    push rbp
     call sin 
-    pop rbp
     mov rax, [rbp - 24]
     movq xmm1, rax
     mulsd xmm0, xmm1 

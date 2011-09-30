@@ -24,7 +24,7 @@ section .text
 
     global main 
 
-    extern stderr, printf, fprintf
+    extern stderr, fprintf
     extern atof
     extern exit
 
