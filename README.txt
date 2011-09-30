@@ -19,6 +19,7 @@ Ingredients:
 gcc (I use 4.6.1 20110819)
 nasm (I use 2.09.10)
 rake (from ruby)
+linux
 
 To test that the c version is working, from package root:
 
