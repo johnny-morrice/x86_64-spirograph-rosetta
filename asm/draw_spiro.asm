@@ -1,6 +1,3 @@
-section .data
-    increment: dq __float64__(0.03)
-
 section .text
 
     extern sin, cos
@@ -9,7 +6,8 @@ section .text
 ; xmm0: moving
 ; xmm1: fixed
 ; xmm2: offset
-; rdi: vertices 
+; rdi: vertex array 
+; rsi: length of vertex array
 draw_spiro:
     
     push rbp
@@ -19,7 +17,7 @@ draw_spiro:
     ; rbp - 8 is time t
     mov qword [rbp - 8], 0
     ; rbp - 16 is time increment
-    mov rax, [increment]
+    mov rax, __float64__(0.03)
     mov qword [rbp - 16], rax
 
     ; rbp - 24 becomes the path magnitude, fixed - moving
@@ -32,7 +30,7 @@ draw_spiro:
     ; rbp - 40 becomes the offset
     movq [rbp - 40], xmm2
 
-    mov rcx, SPIRO_LENGTH
+    mov rcx, rsi
 
 ; Drawing loop
 parametric:

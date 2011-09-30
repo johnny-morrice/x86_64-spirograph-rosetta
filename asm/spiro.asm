@@ -7,13 +7,13 @@
 
 BITS 64 
 
+%include "draw_spiro.asm"
+
 %define GL_COLOR_BUFFER_BIT 0x00004000
 %define GL_POINTS 0
 %define GL_VERTEX_ARRAY 0x8074
 %define GL_DOUBLE 0x140A
 %define SPIRO_LENGTH 10000
-
-%include "draw_spiro.asm"
 
 section .data
     name:   db 'NASM Spirograph', 0
@@ -118,7 +118,6 @@ initialize:
     call glutDisplayFunc
     ret
 
-; spiro_x is a little helper for draw_spiro
 ; Begin game loop
 render:
     push rbp
@@ -127,6 +126,7 @@ render:
     sub rsp, 16 * SPIRO_LENGTH
 
     ; Draw the spirograph
+    mov rsi, SPIRO_LENGTH
     mov rdi, rsp
     call draw_spiro
 

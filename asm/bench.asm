@@ -1,6 +1,6 @@
-%define SPIRO_LENGTH 100000
-
 %include "draw_spiro.asm"
+
+%define SPIRO_LENGTH 100000
 
 section .data
     moving: dq __float64__(0.2)
@@ -24,6 +24,7 @@ main:
     mov rax, [offset]
     movq xmm2, rax
 
+    mov rsi, SPIRO_LENGTH
     mov rdi, rsp
     call draw_spiro 
 
