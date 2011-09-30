@@ -39,6 +39,10 @@ cd c
 rake build
 # ./cspiro 0.2 0.3 0.4
 
+The first parameter is the radius of the inner, moving circle.
+The second is the radius of the outer circle.
+The third is the offset of the pencil from the centre of the inner circle.
+
 To test the assembler version is working, from package root:
 
 cd asm
@@ -49,6 +53,8 @@ To assembly an optimized version in assembly:
 cd asm
 rake build
 # ./asmspiro 0.1 0.7 0.4
+
+Parameters are as for the C version
 
 Likewise for benchmarking:
 
