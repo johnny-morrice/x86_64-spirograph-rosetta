@@ -1,3 +1,7 @@
+; Spirograph benchmark
+; John Morrice 2011
+; Released under the WTFPL
+
 %include "draw_spiro.asm"
 
 %define SPIRO_LENGTH 100000

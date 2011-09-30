@@ -1,3 +1,7 @@
+; Draw a Spirograph
+; John Morrice 2011
+; Released under the WTFPL
+
 section .text
 
     extern sin, cos

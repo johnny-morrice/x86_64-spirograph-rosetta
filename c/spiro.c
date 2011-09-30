@@ -1,3 +1,7 @@
+// Spirograph in C
+// John Morrice 2011
+// Released under the WTFPL
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -7,7 +11,7 @@
 
 #define SPIRO_LENGTH 20000
 
-
+// glut display callback
 void display()
 {
 
@@ -18,6 +22,7 @@ void display()
     glutSwapBuffers();
 }
 
+// GL initialization
 void initialize(int argc, char * argv[])
 {
     glutInit(&argc, argv);
@@ -28,6 +33,7 @@ void initialize(int argc, char * argv[])
 
 }
 
+// Get radii etc from command line arguments
 void read_arguments(int argc, char * argv[], double * real_args)
 {
     int i;
@@ -46,6 +52,7 @@ void read_arguments(int argc, char * argv[], double * real_args)
     }
 }
 
+// Go go go!
 void render(double moving, double fixed, double offset)
 {
     double vertices[2 * SPIRO_LENGTH];
