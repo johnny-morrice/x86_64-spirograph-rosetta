@@ -4,7 +4,7 @@ All source code is available under the terms of the WTFPL (see LICENSE.txt)
 This package presents a simple C graphics program, and a port of that code into
 x86_64 NASM assembly.
 
-The motivation here is that I found it difficult to learn 64 bit assembly, due
+My motivation for publishing this, is that I found it difficult to learn 64 bit assembly, due
 to a shortage of code examples online.
 
 x86 programmers should note that x86_64 assembly uses the AMD64 ABI calling
