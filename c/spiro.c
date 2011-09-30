@@ -1,46 +1,12 @@
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <GL/freeglut.h>
 
+#include "draw_spiro.h"
+
 #define SPIRO_LENGTH 20000
 
-double spiro_x(double r, double moving, double offset, double t)
-{
-    return (r * cos(t)) + (offset * cos(t * r / moving));
-}
-
-double spiro_y(double r, double moving, double offset, double t)
-{
-    return (r * sin(t)) - (offset * sin(t * r / moving));
-
-}
-
-void draw_spiro(double moving, double fixed, double offset, double * vertices)
-{
-    double t, x, y, r;
-
-    int i;
-
-    t = 0.0f;
-    r = fixed - moving;
-    
-    for (i = 0; i < SPIRO_LENGTH; i += 2)
-    {
-        x = spiro_x(r, moving, offset, t);
-        y = spiro_y(r, moving, offset, t);
-//        printf("%f\n", x);
-
-
-        vertices[i] = x;
-        vertices[i + 1] = y; 
-
-        t += 0.03;
-
-    }
-
-}
 
 void display()
 {
@@ -86,7 +52,7 @@ void render(double moving, double fixed, double offset)
 
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    draw_spiro(moving, fixed, offset, vertices);
+    draw_spiro(moving, fixed, offset, vertices, SPIRO_LENGTH);
     
     glVertexPointer(2, GL_DOUBLE, 0, vertices);
 

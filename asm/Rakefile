@@ -1,5 +1,15 @@
-task :go do
+task :build do
+    sh "nasm -f elf64 -Ox spiro.asm -o asmspiro.o"
+    sh "gcc -lglut -O2 -o asmspiro asmspiro.o"
+end
+
+task :test do
     sh "nasm -f elf64 -g spiro.asm -l spiro.lst -o asmspiro.o"
     sh "gcc -lglut -g -o asmspiro asmspiro.o"
     sh "./asmspiro 0.1 0.7 0.2"
+end
+
+task :bench do
+    sh "nasm -f elf64 -Ox bench.asm -o bench.o"
+    sh "gcc -lglut -O2 -o bench bench.o"
 end
