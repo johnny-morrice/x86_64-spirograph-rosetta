@@ -1,1 +1,6 @@
 *.swp
+*.o
+asm/bench
+asm/asmspiro
+c/bench
+c/cspiro
