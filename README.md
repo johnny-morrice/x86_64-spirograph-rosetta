@@ -22,21 +22,22 @@ linux
 
 To test that the c version is working, from package root:
 
-> $ cd c
-> $ rake test
+    $ cd c
+    $ rake test
 
 To produce a benchmark program in c use:
-> $ cd c
-> $ rake bench
-> $ # time ./bench
+
+    $ cd c
+    $ rake bench
+    $ # time ./bench
 
 The benchmark computes a vertex array of points on the spiral.
 
 To build an optimized version in c:
 
-> $ cd c
-> $ rake build
-> $ # ./cspiro 0.2 0.3 0.4
+    $ cd c
+    $ rake build
+    $ ./cspiro 0.2 0.3 0.4
 
 The first parameter is the radius of the inner, moving circle.
 The second is the radius of the outer circle.
@@ -44,22 +45,21 @@ The third is the offset of the pencil from the centre of the inner circle.
 
 To test the assembler version is working, from package root:
 
-> $ cd asm
-> $ rake test
+    $ cd asm
+    $ rake test
 
 To assembly an optimized version in assembly:
 
-> $ cd asm
-> $ rake build
-> $ # ./asmspiro 0.1 0.7 0.4
+    $ cd asm
+    $ rake build
+    $ ./asmspiro 0.1 0.7 0.4
 
 Parameters are as for the C version
 
 Likewise for benchmarking:
 
-> $ cd asm
-> $ rake bench
-> $ time ./bench
+    $ cd asm
+    $ rake bench
+    $ time ./bench
 
 All source code is available under the terms of the WTFPL (see LICENSE.txt)
-
